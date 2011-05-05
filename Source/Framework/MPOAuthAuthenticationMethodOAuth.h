@@ -15,8 +15,8 @@ extern NSString * const MPOAuthRequestTokenURLKey;
 extern NSString * const MPOAuthUserAuthorizationURLKey;
 extern NSString * const MPOAuthUserAuthorizationMobileURLKey;
 
-extern NSString * const MPOAuthNotificationRequestTokenReceived;
-extern NSString * const MPOAuthNotificationRequestTokenRejected;
+/*extern NSString * const MPOAuthNotificationRequestTokenReceived;
+extern NSString * const MPOAuthNotificationRequestTokenRejected;*/
 
 @protocol MPOAuthAuthenticationMethodOAuthDelegate;
 
@@ -37,12 +37,15 @@ extern NSString * const MPOAuthNotificationRequestTokenRejected;
 
 @end
 
-@protocol MPOAuthAuthenticationMethodOAuthDelegate <NSObject>
+@protocol MPOAuthAuthenticationMethodOAuthDelegate <MPOAuthAPIRequestLoaderDelegate>
 - (NSURL *)callbackURLForCompletedUserAuthorization;
 - (BOOL)automaticallyRequestAuthenticationFromURL:(NSURL *)inAuthURL withCallbackURL:(NSURL *)inCallbackURL;
 
 @optional
 - (NSString *)oauthVerifierForCompletedUserAuthorization;
 - (void)authenticationDidFailWithError:(NSError *)error;
+
+- (void) openOAuthURL:(NSURL*)url;
+
 @end
 

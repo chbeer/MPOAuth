@@ -8,12 +8,26 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString * const MPOAuthNotificationRequestTokenReceived;
+/*extern NSString * const MPOAuthNotificationRequestTokenReceived;
 extern NSString * const MPOAuthNotificationRequestTokenRejected;
 extern NSString * const MPOAuthNotificationAccessTokenReceived;
 extern NSString * const MPOAuthNotificationAccessTokenRejected;
 extern NSString * const MPOAuthNotificationAccessTokenRefreshed;
-extern NSString * const MPOAuthNotificationErrorHasOccurred;
+extern NSString * const MPOAuthNotificationErrorHasOccurred;*/
+
+@class MPOAuthAPIRequestLoader;
+
+@protocol MPOAuthAPIRequestLoaderDelegate <NSObject>
+
+@optional
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader requestTokenReceivedWithParameters:(NSDictionary*)parameters;
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader requestTokenRejectedWithParameters:(NSDictionary*)parameters;
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenReceivedWithParameters:(NSDictionary*)parameters;
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRejectedWithParameters:(NSDictionary*)parameters;
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRefreshedWithParameters:(NSDictionary*)parameters;
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader errorOccuredWithStatus:(int)status withParameters:(NSDictionary*)parameters;
+
+@end
 
 @protocol MPOAuthCredentialStore;
 @protocol MPOAuthParameterFactory;

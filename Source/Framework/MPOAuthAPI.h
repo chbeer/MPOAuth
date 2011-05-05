@@ -10,6 +10,8 @@
 #import "MPOAuthCredentialStore.h"
 #import "MPOAuthParameterFactory.h"
 
+#import "MPOAuthAPIRequestLoader.h"
+
 extern NSString * const MPOAuthNotificationAccessTokenReceived;
 extern NSString * const MPOAuthNotificationAccessTokenRejected;
 extern NSString * const MPOAuthNotificationAccessTokenRefreshed;
@@ -43,9 +45,19 @@ typedef enum {
 @end
 
 @class MPOAuthAuthenticationMethod;
+@class MPOAuthAPI;
+
+@protocol MPOAuthAPIDelegate <MPOAuthAPIRequestLoaderDelegate>
+
+// all inherited from MPOAuthAPIRequestLoaderDelegate
+
+@end
+
 
 @interface MPOAuthAPI : NSObject <MPOAuthAPIInternalClient> {
 @private
+    id <MPOAuthAPIDelegate>                                     delegate_;
+    
 	id <MPOAuthCredentialStore, MPOAuthParameterFactory>		credentials_;
 	NSURL														*baseURL_;
 	NSURL														*authenticationURL_;
@@ -54,6 +66,8 @@ typedef enum {
 	NSMutableArray												*activeLoaders_;
 	MPOAuthAuthenticationState									oauthAuthenticationState_;
 }
+
+@property (nonatomic, assign) id <MPOAuthAPIDelegate> delegate;
 
 @property (nonatomic, readonly, retain) id <MPOAuthCredentialStore, MPOAuthParameterFactory> credentials;
 @property (nonatomic, readonly, retain) NSURL *baseURL;

@@ -11,7 +11,6 @@
 #import "MPOAuthAPIRequestLoaderTests.h"
 #import "MPOAuthCredentialConcreteStore.h"
 #import "MPOAuthAPI.h"
-#import "MPOAuthAPIRequestLoader.h"
 #import "MPOAuthURLRequest.h"
 
 @implementation MPOAuthAPIRequestLoaderTests
@@ -27,7 +26,7 @@
     sleep(2); // let the server get ready to respond
 	
 //	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(accessTokenReceived:) name:MPOAuthNotificationAccessTokenReceived object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestTokenReceived:) name:MPOAuthNotificationRequestTokenReceived object:nil];
+//	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(requestTokenReceived:) name:MPOAuthNotificationRequestTokenReceived object:nil];
 }
 
 - (void)tearDown {
@@ -45,13 +44,17 @@
 	MPOAuthURLRequest *urlRequest = [[MPOAuthURLRequest alloc] initWithURL:url andParameters:nil];
 	[urlRequest setHTTPMethod:@"POST"];
 	MPOAuthAPIRequestLoader *requestLoader = [[MPOAuthAPIRequestLoader alloc] initWithRequest:urlRequest];
+    requestLoader.delegate = self;
 	requestLoader.credentials = credentialStore;
 	[requestLoader loadSynchronously:YES];
 }
 
-- (void)requestTokenReceived:(NSNotification *)inNotification {
-	NSString *token = [[inNotification userInfo] objectForKey:@"oauth_token"];
-	NSString *tokenSecret = [[inNotification userInfo] objectForKey:@"oauth_token_secret"];
+
+//- (void)requestTokenReceived:(NSNotification *)inNotification {
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader requestTokenReceivedWithParameters:(NSDictionary*)parameters;
+{
+	NSString *token = [parameters objectForKey:@"oauth_token"];
+	NSString *tokenSecret = [parameters objectForKey:@"oauth_token_secret"];
 	
 	STAssertEqualObjects(token, @"nnch734d00sl2jdk", @"Expected Token Not Found");
     STAssertEqualObjects(tokenSecret, @"pfkkdhi9sl3r4s00", @"Expected Token Secret Not Found");

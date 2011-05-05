@@ -98,6 +98,8 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	[super dealloc];
 }
 
+@synthesize delegate = delegate_;
+
 @synthesize credentials = credentials_;
 @synthesize baseURL = baseURL_;
 @synthesize authenticationURL = authenticationURL_;

@@ -7,9 +7,10 @@
 //
 
 #import <SenTestingKit/SenTestingKit.h>
+#import "MPOAuthAPIRequestLoader.h"
 
 
-@interface MPOAuthAPIRequestLoaderTests : SenTestCase {
+@interface MPOAuthAPIRequestLoaderTests : SenTestCase <MPOAuthAPIRequestLoaderDelegate> {
     NSTask *server;
 }
 

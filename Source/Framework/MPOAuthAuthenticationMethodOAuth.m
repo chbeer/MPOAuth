@@ -51,9 +51,9 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 		self.oauthAuthorizeTokenURL = [NSURL URLWithString:[inConfig objectForKey:MPOAuthUserAuthorizationURLKey]];
 		self.oauthGetAccessTokenURL = [NSURL URLWithString:[inConfig objectForKey:MPOAuthAccessTokenURLKey]];		
 		
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_requestTokenReceived:) name:MPOAuthNotificationRequestTokenReceived object:nil];
+/*		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_requestTokenReceived:) name:MPOAuthNotificationRequestTokenReceived object:nil];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_requestTokenRejected:) name:MPOAuthNotificationRequestTokenRejected object:nil];
-		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_accessTokenReceived:) name:MPOAuthNotificationAccessTokenReceived object:nil];		
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_accessTokenReceived:) name:MPOAuthNotificationAccessTokenReceived object:nil];		*/
 	}
 	return self;
 }
@@ -88,24 +88,33 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 		if ([tokenExpiryDate compare:[NSDate date]] == NSOrderedAscending) {
 			[self refreshAccessToken];
 		}
-	}	
+	} else if (credentials.accessToken) {
+        [self.oauthAPI setAuthenticationState:MPOAuthAuthenticationStateAuthenticated];
+    }
 }
 
 - (void)_authenticationRequestForRequestToken {
 	if (self.oauthRequestTokenURL) {
 		MPLog(@"--> Performing Request Token Request: %@", self.oauthRequestTokenURL);
 		
+        NSMutableArray *params = [NSMutableArray array];
+        
 		// Append the oauth_callbackUrl parameter for requesting the request token
 		MPURLRequestParameter *callbackParameter = nil;
 		if (self.delegate && [self.delegate respondsToSelector: @selector(callbackURLForCompletedUserAuthorization)]) {
 			NSURL *callbackURL = [self.delegate callbackURLForCompletedUserAuthorization];
 			callbackParameter = [[[MPURLRequestParameter alloc] initWithName:@"oauth_callback" andValue:[callbackURL absoluteString]] autorelease];
+            [params addObject:callbackParameter];
 		} else {
 			// oob = "Out of bounds"
 			callbackParameter = [[[MPURLRequestParameter alloc] initWithName:@"oauth_callback" andValue:@"oob"] autorelease];
+            [params addObject:callbackParameter];
 		}
+        
+        if ([delegate_ respondsToSelector:@selector(additionalParametersForRequestTokenRequest)]) {
+            [params addObjectsFromArray:[delegate_ additionalParametersForRequestTokenRequest]];
+        }
 		
-		NSArray *params = [NSArray arrayWithObject:callbackParameter];
 		[self.oauthAPI performMethod:nil atURL:self.oauthRequestTokenURL withParameters:params withTarget:self andAction:@selector(_authenticationRequestForRequestTokenSuccessfulLoad:withData:)];
 	}
 }
@@ -143,7 +152,11 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 #if TARGET_OS_IPHONE
 	[[UIApplication sharedApplication] openURL:userAuthURL];
 #else
-	[[NSWorkspace sharedWorkspace] openURL:userAuthURL];
+    if ([self.delegate respondsToSelector:@selector(openOAuthURL:)]) {
+        [self.delegate openOAuthURL:userAuthURL];
+    } else {
+        [[NSWorkspace sharedWorkspace] openURL:userAuthURL];
+    }
 #endif
 }
 
@@ -166,37 +179,90 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	}
 }
 
+- (void)refreshAccessToken {
+	MPURLRequestParameter *sessionHandleParameter = nil;
+    MPURLRequestParameter *verifierParameter = nil;
+	MPOAuthCredentialConcreteStore *credentials = (MPOAuthCredentialConcreteStore *)[self.oauthAPI credentials];
+	
+	if (credentials.sessionHandle) {
+		sessionHandleParameter = [[MPURLRequestParameter alloc] init];
+		sessionHandleParameter.name = @"oauth_session_handle";
+		sessionHandleParameter.value = credentials.sessionHandle;
+	}
+    
+    if (self.delegate && [self.delegate respondsToSelector: @selector(oauthVerifierForCompletedUserAuthorization)]) {
+		NSString *verifier = [self.delegate oauthVerifierForCompletedUserAuthorization];
+		if (verifier) {
+			verifierParameter = [[[MPURLRequestParameter alloc] initWithName:@"oauth_verifier" andValue:verifier] autorelease];
+		}
+	}
+    
+    NSArray *parameters = nil;
+    if (sessionHandleParameter || verifierParameter) {
+        NSMutableArray *tempArray = [NSMutableArray array];
+        if (sessionHandleParameter) {
+            [tempArray addObject:sessionHandleParameter];
+        }
+        if (verifierParameter) {
+            [tempArray addObject:verifierParameter];
+        }
+        parameters = tempArray;
+    }
+	
+	[self.oauthAPI performMethod:nil
+						   atURL:self.oauthGetAccessTokenURL
+				  withParameters:parameters
+					  withTarget:nil
+					   andAction:nil];
+	
+	[sessionHandleParameter release];	
+}
+
 #pragma mark -
 
-- (void)_requestTokenReceived:(NSNotification *)inNotification {
-	if ([[inNotification userInfo] objectForKey:@"oauth_callback_confirmed"]) {
+//- (void)_requestTokenReceived:(NSNotification *)inNotification {
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader requestTokenReceivedWithParameters:(NSDictionary*)parameters;
+{
+	if ([parameters objectForKey:@"oauth_callback_confirmed"]) {
 		self.oauth10aModeActive = YES;
 	}
 	
-	[self.oauthAPI setCredential:[[inNotification userInfo] objectForKey:@"oauth_token"] withName:kMPOAuthCredentialRequestToken];
-	[self.oauthAPI setCredential:[[inNotification userInfo] objectForKey:@"oauth_token_secret"] withName:kMPOAuthCredentialRequestTokenSecret];
+	[self.oauthAPI setCredential:[parameters objectForKey:@"oauth_token"] withName:kMPOAuthCredentialRequestToken];
+	[self.oauthAPI setCredential:[parameters objectForKey:@"oauth_token_secret"] withName:kMPOAuthCredentialRequestTokenSecret];
+    
+    if ([delegate_ respondsToSelector:@selector(requestLoader:requestTokenReceivedWithParameters:)]) {
+        [delegate_ requestLoader:loader requestTokenReceivedWithParameters:parameters];
+    }
 }
 
-- (void)_requestTokenRejected:(NSNotification *)inNotification {
+//- (void)_requestTokenRejected:(NSNotification *)inNotification {
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader requestTokenRejectedWithParameters:(NSDictionary*)parameters;
+{
 	[self.oauthAPI removeCredentialNamed:MPOAuthCredentialRequestTokenKey];
 	[self.oauthAPI removeCredentialNamed:MPOAuthCredentialRequestTokenSecretKey];
+    
+    if ([delegate_ respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
+        [delegate_ requestLoader:loader requestTokenRejectedWithParameters:parameters];
+    }
 }
 
-- (void)_accessTokenReceived:(NSNotification *)inNotification {
+//- (void)_accessTokenReceived:(NSNotification *)inNotification {
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenReceivedWithParameters:(NSDictionary*)parameters;
+{
 	[self.oauthAPI removeCredentialNamed:MPOAuthCredentialRequestTokenKey];
 	[self.oauthAPI removeCredentialNamed:MPOAuthCredentialRequestTokenSecretKey];
 	
-	[self.oauthAPI setCredential:[[inNotification userInfo] objectForKey:@"oauth_token"] withName:kMPOAuthCredentialAccessToken];
-	[self.oauthAPI setCredential:[[inNotification userInfo] objectForKey:@"oauth_token_secret"] withName:kMPOAuthCredentialAccessTokenSecret];
+	[self.oauthAPI setCredential:[parameters objectForKey:@"oauth_token"] withName:kMPOAuthCredentialAccessToken];
+	[self.oauthAPI setCredential:[parameters objectForKey:@"oauth_token_secret"] withName:kMPOAuthCredentialAccessTokenSecret];
 	
-	if ([[inNotification userInfo] objectForKey:MPOAuthCredentialSessionHandleKey]) {
-		[self.oauthAPI setCredential:[[inNotification userInfo] objectForKey:MPOAuthCredentialSessionHandleKey] withName:kMPOAuthCredentialSessionHandle];
+	if ([parameters objectForKey:MPOAuthCredentialSessionHandleKey]) {
+		[self.oauthAPI setCredential:[parameters objectForKey:MPOAuthCredentialSessionHandleKey] withName:kMPOAuthCredentialSessionHandle];
 	}
 
 	[self.oauthAPI setAuthenticationState:MPOAuthAuthenticationStateAuthenticated];
 	
-	if ([[inNotification userInfo] objectForKey:@"oauth_expires_in"]) {
-		NSTimeInterval tokenRefreshInterval = (NSTimeInterval)[[[inNotification userInfo] objectForKey:@"oauth_expires_in"] intValue];
+	if ([parameters objectForKey:@"oauth_expires_in"]) {
+		NSTimeInterval tokenRefreshInterval = (NSTimeInterval)[[parameters objectForKey:@"oauth_expires_in"] intValue];
 		NSDate *tokenExpiryDate = [NSDate dateWithTimeIntervalSinceNow:tokenRefreshInterval];
 		[[NSUserDefaults standardUserDefaults] setDouble:[tokenExpiryDate timeIntervalSinceReferenceDate] forKey:MPOAuthTokenRefreshDateDefaultsKey];
 	
@@ -206,7 +272,35 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	} else {
 		[[NSUserDefaults standardUserDefaults] removeObjectForKey:MPOAuthTokenRefreshDateDefaultsKey];
 	}
+    
+    if ([delegate_ respondsToSelector:@selector(requestLoader:accessTokenReceivedWithParameters:)]) {
+        [delegate_ requestLoader:loader accessTokenReceivedWithParameters:parameters];
+    }
 }
+
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRejectedWithParameters:(NSDictionary*)parameters;
+{
+    if ([delegate_ respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameters:)]) {
+        [delegate_ requestLoader:loader accessTokenRejectedWithParameters:parameters];
+    }
+}
+
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRefreshedWithParameters:(NSDictionary*)parameters;
+{
+    [self.oauthAPI setAuthenticationState:MPOAuthAuthenticationStateAuthenticated];
+    
+    if ([delegate_ respondsToSelector:@selector(requestLoader:accessTokenRefreshedWithParameters:)]) {
+        [delegate_ requestLoader:loader accessTokenRefreshedWithParameters:parameters];
+    }
+}
+
+- (void) requestLoader:(MPOAuthAPIRequestLoader*)loader errorOccuredWithStatus:(int)status withParameters:(NSDictionary*)parameters;
+{
+    if ([delegate_ respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
+        [delegate_ requestLoader:loader errorOccuredWithStatus:status withParameters:parameters];
+    }
+}
+
 
 #pragma mark -
 #pragma mark - Private APIs -
