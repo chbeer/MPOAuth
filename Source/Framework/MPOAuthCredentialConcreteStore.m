@@ -149,7 +149,14 @@ extern NSString * const MPOAuthCredentialSessionHandleKey;
 #pragma mark -
 
 - (NSString *)credentialNamed:(NSString *)inCredentialName {
-	return [store_ objectForKey:inCredentialName];
+	NSString *credential = [store_ objectForKey:inCredentialName];
+    if (!credential) {
+        credential = [self findValueFromKeychainUsingName:inCredentialName];
+        if (credential) {
+            [store_ setObject:credential forKey:inCredentialName];
+        }
+    }
+    return credential;
 }
 
 - (void)setCredential:(id)inCredential withName:(NSString *)inName {

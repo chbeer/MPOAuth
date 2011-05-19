@@ -212,7 +212,7 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	[self.oauthAPI performMethod:nil
 						   atURL:self.oauthGetAccessTokenURL
 				  withParameters:parameters
-					  withTarget:nil
+					  withTarget:self       // cb: changed to self to react on errors
 					   andAction:nil];
 	
 	[sessionHandleParameter release];	
