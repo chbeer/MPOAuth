@@ -1719,6 +1719,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = MPOAuth;
 				SDKROOT = "";
+				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -1748,6 +1749,7 @@
 				PREBINDING = NO;
 				PRODUCT_NAME = MPOAuth;
 				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
 				ZERO_LINK = NO;
 			};
 			name = Release;
