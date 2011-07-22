@@ -241,7 +241,40 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 				}
 			}
 		}
-	}
+        
+    // Google sends 400 with "The token is invalid"
+	} else if (status >= 400) {
+        if ([response rangeOfString:@"token is invalid"].location != NSNotFound) {
+            if (self.credentials.requestToken && !self.credentials.accessToken) {
+                [_credentials setRequestToken:nil];
+                [_credentials setRequestTokenSecret:nil];
+                
+                if ([_target respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
+                    [_target requestLoader:self requestTokenRejectedWithParameters:foundParameters];
+                }
+                /*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationRequestTokenRejected
+                 object:nil
+                 userInfo:foundParameters];*/
+            } else if (self.credentials.accessToken && !self.credentials.requestToken) {
+                // your access token may be invalid due to a number of reasons so it's up to the
+                // user to decide whether or not to remove them
+                
+                if ([_target respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameter:)]) {
+                    [_target requestLoader:self accessTokenRejectedWithParameters:foundParameters];
+                }
+                
+                /*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationAccessTokenRejected
+                 object:nil
+                 userInfo:foundParameters];*/
+                
+            }						
+        }
+        
+        // something's messed up, so throw an error
+        if ([_target respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
+            [_target requestLoader:self errorOccuredWithStatus:status withParameters:foundParameters];
+        }
+    }
 }
 
 @end

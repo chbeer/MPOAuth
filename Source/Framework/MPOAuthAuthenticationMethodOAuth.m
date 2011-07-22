@@ -175,7 +175,8 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	
 	if (self.oauthGetAccessTokenURL) {
 		MPLog(@"--> Performing Access Token Request: %@", self.oauthGetAccessTokenURL);
-		[self.oauthAPI performMethod:nil atURL:self.oauthGetAccessTokenURL withParameters:params withTarget:self andAction:nil];
+		[self.oauthAPI performMethod:nil atURL:self.oauthGetAccessTokenURL withParameters:params 
+                          withTarget:self andAction:nil];
 	}
 }
 
@@ -306,7 +307,7 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 #pragma mark - Private APIs -
 
 - (void)_performedLoad:(MPOAuthAPIRequestLoader *)inLoader receivingData:(NSData *)inData {
-	//	NSLog(@"loaded %@, and got %@", inLoader, inData);
+	MPLog(@"loaded %@, and got %@", inLoader, inData);
 }
 
 @end
