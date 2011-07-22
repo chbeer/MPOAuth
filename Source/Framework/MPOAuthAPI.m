@@ -203,6 +203,15 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	[aRequest release];	
 }
 
+- (NSURLRequest*) signURLRequest:(NSMutableURLRequest*)inRequest;
+{
+    MPOAuthURLRequest *aRequest = [[MPOAuthURLRequest alloc] initWithURLRequest:inRequest];
+    [aRequest addParameters:[self.credentials oauthParameters]];
+	NSURLRequest *urlRequest = [aRequest urlRequestSignedWithSecret:[self.credentials signingKey] 
+                                                        usingMethod:[self.credentials signatureMethod]];
+    return urlRequest;
+}
+
 - (NSData *)dataForMethod:(NSString *)inMethod {
 	return [self dataForURL:self.baseURL andMethod:inMethod withParameters:nil];
 }
@@ -249,7 +258,7 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 #pragma mark - Private APIs -
 
 - (void)_performedLoad:(MPOAuthAPIRequestLoader *)inLoader receivingData:(NSData *)inData {
-//	NSLog(@"loaded %@, and got %@", inLoader, inData);
+    MPLog(@"loaded %@, and got %@", inLoader, inData);
 }
 
 @end

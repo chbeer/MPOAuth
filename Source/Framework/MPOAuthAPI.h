@@ -93,6 +93,8 @@ typedef enum {
 - (void)performPOSTMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction;
 - (void)performURLRequest:(NSURLRequest *)inRequest withTarget:(id)inTarget andAction:(SEL)inAction;
 
+- (NSURLRequest*) signURLRequest:(NSMutableURLRequest*)inRequest;
+
 - (NSData *)dataForMethod:(NSString *)inMethod;
 - (NSData *)dataForMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters;
 - (NSData *)dataForURL:(NSURL *)inURL andMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters;
