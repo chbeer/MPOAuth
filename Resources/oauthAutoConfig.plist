@@ -127,12 +127,12 @@
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
 		<string>http://twitter.com/oauth/access_token</string>
-		<key>MPOAuthAuthenticationMethodXAuth</key>
+		<key>MPOAuthAuthenticationMethodXAuth_</key>
 		<dict>
 			<key>MPOAuthAccessTokenURL</key>
 			<string>https://api.twitter.com/oauth/access_token</string>
 		</dict>
-		<key>MPOAuthAuthenticationPreferredMethods</key>
+		<key>MPOAuthAuthenticationPreferredMethods_</key>
 		<array>
 			<string>MPOAuthAuthenticationMethodXAuth</string>
 		</array>

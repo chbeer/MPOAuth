@@ -244,7 +244,13 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
         
     // Google sends 400 with "The token is invalid"
 	} else if (status >= 400) {
-        if ([response rangeOfString:@"token is invalid"].location != NSNotFound) {
+        NSString *lcase = [response lowercaseString];
+        BOOL token = [lcase rangeOfString:@"token"].location != NSNotFound;
+        BOOL invalid = [lcase rangeOfString:@"invalid"].location != NSNotFound;
+        BOOL authorization = [lcase rangeOfString:@"authorization"].location != NSNotFound;
+        BOOL required = [lcase rangeOfString:@"required"].location != NSNotFound;
+        
+        if (token && invalid) {
             if (self.credentials.requestToken && !self.credentials.accessToken) {
                 [_credentials setRequestToken:nil];
                 [_credentials setRequestTokenSecret:nil];
@@ -268,6 +274,7 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
                  userInfo:foundParameters];*/
                 
             }						
+        } else if (authorization && required) {
         }
         
         // something's messed up, so throw an error
