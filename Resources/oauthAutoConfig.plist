@@ -106,11 +106,11 @@
 	<key>.soundcloud.com</key>
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
-		<string>http://api.soundcloud.com/oauth/request_token</string>
+		<string>http://api.soundcloud.com/oauth/access_token</string>
 		<key>MPOAuthRequestTokenURL</key>
 		<string>http://api.soundcloud.com/oauth/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
-		<string>http://soundcloud.com/oauth/authorize_token</string>
+		<string>http://soundcloud.com/oauth/authorize</string>
 	</dict>
 	<key>.tripit.com</key>
 	<dict>
