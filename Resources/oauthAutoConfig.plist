@@ -159,5 +159,14 @@
 		<key>MPOAuthUserAuthorizationURL</key>
 		<string>https://www.linkedin.com/uas/oauth/authorize</string>
 	</dict>
+	<key>.flickr.com</key>
+	<dict>
+		<key>MPOAuthAccessTokenURL</key>
+		<string>http://www.flickr.com/services/oauth/request_token</string>
+		<key>MPOAuthRequestTokenURL</key>
+		<string>http://www.flickr.com/services/oauth/request_token</string>
+		<key>MPOAuthUserAuthorizationURL</key>
+		<string>http://www.flickr.com/services/oauth/authorize</string>
+	</dict>
 </dict>
 </plist>
