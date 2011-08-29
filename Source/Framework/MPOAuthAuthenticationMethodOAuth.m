@@ -114,8 +114,15 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
         if ([delegate_ respondsToSelector:@selector(additionalParametersForRequestTokenRequest)]) {
             [params addObjectsFromArray:[delegate_ additionalParametersForRequestTokenRequest]];
         }
+        
+        NSString *httpMethod = @"GET";
+        if ([self.delegate respondsToSelector: @selector(httpMethodForRequestTokenRequest)]) {
+            httpMethod = [self.delegate httpMethodForRequestTokenRequest];
+        }
 		
-		[self.oauthAPI performMethod:nil atURL:self.oauthRequestTokenURL withParameters:params withTarget:self andAction:@selector(_authenticationRequestForRequestTokenSuccessfulLoad:withData:)];
+        [self.oauthAPI performMethod:nil atURL:self.oauthRequestTokenURL withParameters:params 
+                          withTarget:self andAction:@selector(_authenticationRequestForRequestTokenSuccessfulLoad:withData:) 
+                     usingHTTPMethod:httpMethod];
 	}
 }
 
@@ -174,9 +181,14 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	}
 	
 	if (self.oauthGetAccessTokenURL) {
+        NSString *httpMethod = @"GET";
+        if ([self.delegate respondsToSelector: @selector(httpMethodForAccessTokenRequest)]) {
+            httpMethod = [self.delegate httpMethodForAccessTokenRequest];
+        }
+        
 		MPLog(@"--> Performing Access Token Request: %@", self.oauthGetAccessTokenURL);
 		[self.oauthAPI performMethod:nil atURL:self.oauthGetAccessTokenURL withParameters:params 
-                          withTarget:self andAction:nil];
+                          withTarget:self andAction:nil usingHTTPMethod:httpMethod];
 	}
 }
 

@@ -47,5 +47,8 @@ extern NSString * const MPOAuthNotificationRequestTokenRejected;*/
 
 - (void) openOAuthURL:(NSURL*)url;
 
+- (NSString*) httpMethodForRequestTokenRequest;
+- (NSString*) httpMethodForAccessTokenRequest;
+
 @end
 
