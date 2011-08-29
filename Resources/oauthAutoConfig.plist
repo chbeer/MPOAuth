@@ -167,6 +167,14 @@
 		<string>https://api.xing.com/v1/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
 		<string>https://api.xing.com/v1/authorize</string>
+	<key>.flickr.com</key>
+	<dict>
+		<key>MPOAuthAccessTokenURL</key>
+		<string>http://www.flickr.com/services/oauth/request_token</string>
+		<key>MPOAuthRequestTokenURL</key>
+		<string>http://www.flickr.com/services/oauth/request_token</string>
+		<key>MPOAuthUserAuthorizationURL</key>
+		<string>http://www.flickr.com/services/oauth/authorize</string>
 	</dict>
 </dict>
 </plist>
