@@ -45,6 +45,8 @@ extern NSString * const MPOAuthNotificationRequestTokenRejected;*/
 - (NSString *)oauthVerifierForCompletedUserAuthorization;
 - (void)authenticationDidFailWithError:(NSError *)error;
 
+- (NSArray*) additionalParametersForRequestTokenRequest;
+
 - (void) openOAuthURL:(NSURL*)url;
 
 - (NSString*) httpMethodForRequestTokenRequest;
