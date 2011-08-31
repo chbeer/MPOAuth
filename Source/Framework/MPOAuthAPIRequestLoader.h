@@ -8,14 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-/*extern NSString * const MPOAuthNotificationRequestTokenReceived;
-extern NSString * const MPOAuthNotificationRequestTokenRejected;
-extern NSString * const MPOAuthNotificationAccessTokenReceived;
-extern NSString * const MPOAuthNotificationAccessTokenRejected;
-extern NSString * const MPOAuthNotificationAccessTokenRefreshed;
-extern NSString * const MPOAuthNotificationErrorHasOccurred;*/
-
 @class MPOAuthAPIRequestLoader;
+
+typedef void(^MPOAuthRequestLoaderHandler)(MPOAuthAPIRequestLoader *loader, NSData *data, NSError *error);
 
 @protocol MPOAuthAPIRequestLoaderDelegate <NSObject>
 
@@ -43,8 +38,10 @@ extern NSString * const MPOAuthNotificationErrorHasOccurred;*/
 	NSMutableData					*_dataBuffer;
 	NSString						*_dataAsString;
 	NSError							*_error;
-	id								_target;
-	SEL								_action;
+    
+	id<MPOAuthAPIRequestLoaderDelegate>     _delegate;
+    MPOAuthRequestLoaderHandler             _handler;
+    
 }
 
 @property (nonatomic, readwrite, retain) id <MPOAuthCredentialStore, MPOAuthParameterFactory> credentials;
@@ -52,8 +49,8 @@ extern NSString * const MPOAuthNotificationErrorHasOccurred;*/
 @property (nonatomic, readwrite, retain) MPOAuthURLResponse *oauthResponse;
 @property (nonatomic, readonly, retain) NSData *data;
 @property (nonatomic, readonly, retain) NSString *responseString;
-@property (nonatomic, readwrite, assign) id target;
-@property (nonatomic, readwrite, assign) SEL action;
+@property (nonatomic, readwrite, assign) id delegate;
+@property (nonatomic, readwrite, copy) MPOAuthRequestLoaderHandler handler;
 
 - (id)initWithURL:(NSURL *)inURL;
 - (id)initWithRequest:(MPOAuthURLRequest *)inRequest;

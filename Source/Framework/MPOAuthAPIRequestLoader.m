@@ -16,13 +16,6 @@
 #import "NSURLResponse+Encoding.h"
 #import "MPDebug.h"
 
-/*NSString * const MPOAuthNotificationRequestTokenReceived	= @"MPOAuthNotificationRequestTokenReceived";
-NSString * const MPOAuthNotificationRequestTokenRejected	= @"MPOAuthNotificationRequestTokenRejected";
-NSString * const MPOAuthNotificationAccessTokenReceived		= @"MPOAuthNotificationAccessTokenReceived";
-NSString * const MPOAuthNotificationAccessTokenRejected		= @"MPOAuthNotificationAccessTokenRejected";
-NSString * const MPOAuthNotificationAccessTokenRefreshed	= @"MPOAuthNotificationAccessTokenRefreshed";
-NSString * const MPOAuthNotificationOAuthCredentialsReady	= @"MPOAuthNotificationOAuthCredentialsReady";
-NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErrorHasOccurred";*/
 
 @interface MPOAuthURLResponse ()
 @property (nonatomic, readwrite, retain) NSURLResponse *urlResponse;
@@ -59,6 +52,7 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 	self.oauthResponse = nil;
 	self.data = nil;
 	self.responseString = nil;
+    self.handler = nil;
 
 	[super dealloc];
 }
@@ -68,8 +62,8 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 @synthesize oauthResponse = _oauthResponse;
 @synthesize data = _dataBuffer;
 @synthesize responseString = _dataAsString;
-@synthesize target = _target;
-@synthesize action = _action;
+@synthesize delegate = _delegate;
+@synthesize handler = _handler;
 
 #pragma mark -
 
@@ -107,8 +101,8 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 
 - (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error {
 		MPLog(@"%p: [%@ %@] %@, %@", self, NSStringFromClass([self class]), NSStringFromSelector(_cmd), connection, error);
-	if ([_target respondsToSelector:@selector(loader:didFailWithError:)]) {
-		[_target performSelector: @selector(loader:didFailWithError:) withObject: self withObject: error];
+	if ([_delegate respondsToSelector:@selector(loader:didFailWithError:)]) {
+		[_delegate performSelector: @selector(loader:didFailWithError:) withObject: self withObject: error];
 	}
 }
 
@@ -132,12 +126,8 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 - (void)connectionDidFinishLoading:(NSURLConnection *)connection {
 	[self _interrogateResponseForOAuthData];
 	
-	if (_action) {
-		if ([_target conformsToProtocol:@protocol(MPOAuthAPIInternalClient)]) {
-			[_target performSelector:_action withObject:self withObject:self.data];
-		} else {
-			[_target performSelector:_action withObject:self.oauthRequest.url withObject:self.responseString];
-		}
+	if (_handler) {
+        _handler(self, self.data, nil);
 	}
 }
 
@@ -162,38 +152,26 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 						[_credentials setRequestToken:nil];
 						[_credentials setRequestTokenSecret:nil];
 						
-                        if ([_target respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
-                            [_target requestLoader:self requestTokenRejectedWithParameters:foundParameters];
+                        if ([_delegate respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
+                            [_delegate requestLoader:self requestTokenRejectedWithParameters:foundParameters];
                         }
-						/*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationRequestTokenRejected
-																			object:nil
-																		  userInfo:foundParameters];*/
+
 					} else if (self.credentials.accessToken && !self.credentials.requestToken) {
 						// your access token may be invalid due to a number of reasons so it's up to the
 						// user to decide whether or not to remove them
                         
-                        if ([_target respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameter:)]) {
-                            [_target requestLoader:self accessTokenRejectedWithParameters:foundParameters];
+                        if ([_delegate respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameter:)]) {
+                            [_delegate requestLoader:self accessTokenRejectedWithParameters:foundParameters];
                         }
-                        
-						/*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationAccessTokenRejected
-																			object:nil
-																		  userInfo:foundParameters];*/
-						
+                        						
 					}						
 				}
                 
 				// something's messed up, so throw an error
-                if ([_target respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
-                    [_target requestLoader:self errorOccuredWithStatus:status withParameters:foundParameters];
+                if ([_delegate respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
+                    [_delegate requestLoader:self errorOccuredWithStatus:status withParameters:foundParameters];
                 }
-				
-/*				[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationErrorHasOccurred
-																	object:nil
-																  userInfo:foundParameters];*/
-                
-                
-                
+				                
 			}
 		} else if ([foundParameters objectForKey:@"oauth_token"]) {
 			NSString *aParameterValue = nil;
@@ -204,40 +182,29 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
 					[_credentials setRequestToken:aParameterValue];
 					[_credentials setRequestTokenSecret:[foundParameters objectForKey:@"oauth_token_secret"]];
 					
-                    if ([_target respondsToSelector:@selector(requestLoader:requestTokenReceivedWithParameters:)]) {
-                        [_target requestLoader:self requestTokenReceivedWithParameters:foundParameters];
+                    if ([_delegate respondsToSelector:@selector(requestLoader:requestTokenReceivedWithParameters:)]) {
+                        [_delegate requestLoader:self requestTokenReceivedWithParameters:foundParameters];
                     }
                     
-					/*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationRequestTokenReceived
-																		object:nil
-																	  userInfo:foundParameters];*/
-					
 				} else if (!self.credentials.accessToken && self.credentials.requestToken) {
 					[_credentials setRequestToken:nil];
 					[_credentials setRequestTokenSecret:nil];
 					[_credentials setAccessToken:aParameterValue];
 					[_credentials setAccessTokenSecret:[foundParameters objectForKey:@"oauth_token_secret"]];
 					
-                    if ([_target respondsToSelector:@selector(requestLoader:accessTokenReceivedWithParameters:)]) {
-                        [_target requestLoader:self accessTokenReceivedWithParameters:foundParameters];
+                    if ([_delegate respondsToSelector:@selector(requestLoader:accessTokenReceivedWithParameters:)]) {
+                        [_delegate requestLoader:self accessTokenReceivedWithParameters:foundParameters];
                     }
                     
-					/*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationAccessTokenReceived
-																		object:nil
-																	  userInfo:foundParameters];*/
-					
 				} else if (self.credentials.accessToken && !self.credentials.requestToken) {
 					// replace the current token
 					[_credentials setAccessToken:aParameterValue];
 					[_credentials setAccessTokenSecret:[foundParameters objectForKey:@"oauth_token_secret"]];
 					
-                    if ([_target respondsToSelector:@selector(requestLoader:accessTokenRefreshedWithParameters:)]) {
-                        [_target requestLoader:self accessTokenRefreshedWithParameters:foundParameters];
+                    if ([_delegate respondsToSelector:@selector(requestLoader:accessTokenRefreshedWithParameters:)]) {
+                        [_delegate requestLoader:self accessTokenRefreshedWithParameters:foundParameters];
                     }
                     
-					/*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationAccessTokenRefreshed
-																		object:nil
-																	  userInfo:foundParameters];*/
 				}
 			}
 		}
@@ -255,31 +222,25 @@ NSString * const MPOAuthNotificationErrorHasOccurred		= @"MPOAuthNotificationErr
                 [_credentials setRequestToken:nil];
                 [_credentials setRequestTokenSecret:nil];
                 
-                if ([_target respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
-                    [_target requestLoader:self requestTokenRejectedWithParameters:foundParameters];
+                if ([_delegate respondsToSelector:@selector(requestLoader:requestTokenRejectedWithParameters:)]) {
+                    [_delegate requestLoader:self requestTokenRejectedWithParameters:foundParameters];
                 }
-                /*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationRequestTokenRejected
-                 object:nil
-                 userInfo:foundParameters];*/
+
             } else if (self.credentials.accessToken && !self.credentials.requestToken) {
                 // your access token may be invalid due to a number of reasons so it's up to the
                 // user to decide whether or not to remove them
                 
-                if ([_target respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameter:)]) {
-                    [_target requestLoader:self accessTokenRejectedWithParameters:foundParameters];
+                if ([_delegate respondsToSelector:@selector(requestLoader:accessTokenRejectedWithParameter:)]) {
+                    [_delegate requestLoader:self accessTokenRejectedWithParameters:foundParameters];
                 }
-                
-                /*[[NSNotificationCenter defaultCenter] postNotificationName:MPOAuthNotificationAccessTokenRejected
-                 object:nil
-                 userInfo:foundParameters];*/
                 
             }						
         } else if (authorization && required) {
         }
         
         // something's messed up, so throw an error
-        if ([_target respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
-            [_target requestLoader:self errorOccuredWithStatus:status withParameters:foundParameters];
+        if ([_delegate respondsToSelector:@selector(requestLoader:errorOccuredWithStatus:withParameters:)]) {
+            [_delegate requestLoader:self errorOccuredWithStatus:status withParameters:foundParameters];
         }
     }
 }

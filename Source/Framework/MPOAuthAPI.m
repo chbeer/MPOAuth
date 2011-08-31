@@ -39,7 +39,7 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 @property (nonatomic, readwrite, retain) NSMutableArray *activeLoaders;
 @property (nonatomic, readwrite, assign) MPOAuthAuthenticationState authenticationState;
 
-- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction usingHTTPMethod:(NSString *)inHTTPMethod;
+- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler usingHTTPMethod:(NSString *)inHTTPMethod;
 @end
 
 @implementation MPOAuthAPI
@@ -143,27 +143,27 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 
 #pragma mark -
 
-- (void)performMethod:(NSString *)inMethod withTarget:(id)inTarget andAction:(SEL)inAction {
-	[self performMethod:inMethod atURL:self.baseURL withParameters:nil withTarget:inTarget andAction:inAction usingHTTPMethod:@"GET"];
+- (void)performMethod:(NSString *)inMethod delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
+	[self performMethod:inMethod atURL:self.baseURL withParameters:nil delegate:inDelegate handler:inHandler usingHTTPMethod:@"GET"];
 }
 
-- (void)performMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction {
-	[self performMethod:inMethod atURL:self.baseURL withParameters:inParameters withTarget:inTarget andAction:inAction usingHTTPMethod:@"GET"];
+- (void)performMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
+	[self performMethod:inMethod atURL:self.baseURL withParameters:inParameters delegate:inDelegate handler:inHandler usingHTTPMethod:@"GET"];
 }
 
-- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction {
-	[self performMethod:inMethod atURL:inURL withParameters:inParameters withTarget:inTarget andAction:inAction usingHTTPMethod:@"GET"];
+- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
+	[self performMethod:inMethod atURL:inURL withParameters:inParameters delegate:inDelegate handler:inHandler usingHTTPMethod:@"GET"];
 }
 
-- (void)performPOSTMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction {
-	[self performPOSTMethod:inMethod atURL:self.baseURL withParameters:inParameters withTarget:inTarget andAction:inAction];
+- (void)performPOSTMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
+	[self performPOSTMethod:inMethod atURL:self.baseURL withParameters:inParameters delegate:inDelegate handler:inHandler];
 }
 
-- (void)performPOSTMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction {
-	[self performMethod:inMethod atURL:inURL withParameters:inParameters withTarget:inTarget andAction:inAction usingHTTPMethod:@"POST"];
+- (void)performPOSTMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
+	[self performMethod:inMethod atURL:inURL withParameters:inParameters delegate:inDelegate handler:inHandler usingHTTPMethod:@"POST"];
 }
 
-- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction usingHTTPMethod:(NSString *)inHTTPMethod {
+- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler usingHTTPMethod:(NSString *)inHTTPMethod {
 	if (!inMethod && ![inURL path] && ![inURL query]) {
 		[NSException raise:@"MPOAuthNilMethodRequestException" format:@"Nil was passed as the method to be performed on %@", inURL];
 	}
@@ -174,8 +174,8 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	
 	aRequest.HTTPMethod = inHTTPMethod;
 	loader.credentials = self.credentials;
-	loader.target = inTarget;
-	loader.action = inAction ? inAction : @selector(_performedLoad:receivingData:);
+    loader.delegate = inDelegate;
+	loader.handler = inHandler;
 	
 	[loader loadSynchronously:NO];
 	//	[self.activeLoaders addObject:loader];
@@ -184,7 +184,7 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	[aRequest release];
 }
 
-- (void)performURLRequest:(NSURLRequest *)inRequest withTarget:(id)inTarget andAction:(SEL)inAction {
+- (void)performURLRequest:(NSURLRequest *)inRequest delegate:(id)inDelegate handler:(MPOAuthRequestLoaderHandler)inHandler {
 	if (!inRequest && ![[inRequest URL] path] && ![[inRequest URL] query]) {
 		[NSException raise:@"MPOAuthNilMethodRequestException" format:@"Nil was passed as the method to be performed on %@", inRequest];
 	}
@@ -193,8 +193,8 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	MPOAuthAPIRequestLoader *loader = [[MPOAuthAPIRequestLoader alloc] initWithRequest:aRequest];
 	
 	loader.credentials = self.credentials;
-	loader.target = inTarget;
-	loader.action = inAction ? inAction : @selector(_performedLoad:receivingData:);
+    loader.delegate = inDelegate;
+	loader.handler = inHandler;
 	
 	[loader loadSynchronously:NO];
 	//	[self.activeLoaders addObject:loader];
