@@ -45,8 +45,8 @@
 		[self.oauthAPI performPOSTMethod:nil
 								   atURL:self.oauthGetAccessTokenURL
 						  withParameters:[NSArray arrayWithObjects:usernameParameter, passwordParameter, nil]
-							  withTarget:self
-							   andAction:nil];
+                                delegate:self
+                                 handler:nil];
 	} else if (credentials.accessToken && credentials.accessTokenSecret) {
 		NSTimeInterval expiryDateInterval = [[NSUserDefaults standardUserDefaults] doubleForKey:MPOAuthTokenRefreshDateDefaultsKey];
 		NSDate *tokenExpiryDate = [NSDate dateWithTimeIntervalSinceReferenceDate:expiryDateInterval];

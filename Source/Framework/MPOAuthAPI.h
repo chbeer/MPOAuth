@@ -86,13 +86,13 @@ typedef enum {
 - (void)authenticate;
 - (BOOL)isAuthenticated;
 
-- (void)performMethod:(NSString *)inMethod withTarget:(id)inTarget andAction:(SEL)inAction;
-- (void)performMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction;
-- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction;
-- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction usingHTTPMethod:(NSString *)inHTTPMethod;
-- (void)performPOSTMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction;
-- (void)performPOSTMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters withTarget:(id)inTarget andAction:(SEL)inAction;
-- (void)performURLRequest:(NSURLRequest *)inRequest withTarget:(id)inTarget andAction:(SEL)inAction;
+- (void)performMethod:(NSString *)inMethod delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
+- (void)performMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
+- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
+- (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler usingHTTPMethod:(NSString *)inHTTPMethod;
+- (void)performPOSTMethod:(NSString *)inMethod withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
+- (void)performPOSTMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
+- (void)performURLRequest:(NSURLRequest *)inRequest delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler;
 
 - (NSURLRequest*) signURLRequest:(NSMutableURLRequest*)inRequest;
 

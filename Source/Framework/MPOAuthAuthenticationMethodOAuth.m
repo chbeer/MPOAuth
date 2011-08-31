@@ -121,31 +121,30 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
         }
 		
         [self.oauthAPI performMethod:nil atURL:self.oauthRequestTokenURL withParameters:params 
-                          withTarget:self andAction:@selector(_authenticationRequestForRequestTokenSuccessfulLoad:withData:) 
+                            delegate:self 
+                             handler:^(MPOAuthAPIRequestLoader *inLoader, NSData *data, NSError *error) {
+                                 NSDictionary *oauthResponseParameters = inLoader.oauthResponse.oauthParameters;
+                                 NSString *xoauthRequestAuthURL = [oauthResponseParameters objectForKey:@"xoauth_request_auth_url"]; // a common custom extension, used by Yahoo!
+                                 NSURL *userAuthURL = xoauthRequestAuthURL ? [NSURL URLWithString:xoauthRequestAuthURL] : self.oauthAuthorizeTokenURL;
+                                 NSURL *callbackURL = nil;
+                                 
+                                 if (!self.oauth10aModeActive) {
+                                     callbackURL = [self.delegate respondsToSelector:@selector(callbackURLForCompletedUserAuthorization)] ? [self.delegate callbackURLForCompletedUserAuthorization] : nil;
+                                 }
+                                 
+                                 NSDictionary *parameters = [NSDictionary dictionaryWithObjectsAndKeys:	[oauthResponseParameters objectForKey:	@"oauth_token"], @"oauth_token",
+                                                             callbackURL, @"oauth_callback",
+                                                             nil];
+                                 
+                                 userAuthURL = [userAuthURL urlByAddingParameterDictionary:parameters];
+                                 BOOL delegateWantsToBeInvolved = [self.delegate respondsToSelector:@selector(automaticallyRequestAuthenticationFromURL:withCallbackURL:)];
+                                 
+                                 if (!delegateWantsToBeInvolved || (delegateWantsToBeInvolved && [self.delegate automaticallyRequestAuthenticationFromURL:userAuthURL withCallbackURL:callbackURL])) {
+                                     MPLog(@"--> Automatically Performing User Auth Request: %@", userAuthURL);
+                                     [self _authenticationRequestForUserPermissionsConfirmationAtURL:userAuthURL];
+                                 }
+                             }
                      usingHTTPMethod:httpMethod];
-	}
-}
-
-- (void)_authenticationRequestForRequestTokenSuccessfulLoad:(MPOAuthAPIRequestLoader *)inLoader withData:(NSData *)inData {
-	NSDictionary *oauthResponseParameters = inLoader.oauthResponse.oauthParameters;
-	NSString *xoauthRequestAuthURL = [oauthResponseParameters objectForKey:@"xoauth_request_auth_url"]; // a common custom extension, used by Yahoo!
-	NSURL *userAuthURL = xoauthRequestAuthURL ? [NSURL URLWithString:xoauthRequestAuthURL] : self.oauthAuthorizeTokenURL;
-	NSURL *callbackURL = nil;
-	
-	if (!self.oauth10aModeActive) {
-		callbackURL = [self.delegate respondsToSelector:@selector(callbackURLForCompletedUserAuthorization)] ? [self.delegate callbackURLForCompletedUserAuthorization] : nil;
-	}
-	
-	NSDictionary *parameters = [NSDictionary dictionaryWithObjectsAndKeys:	[oauthResponseParameters objectForKey:	@"oauth_token"], @"oauth_token",
-																													callbackURL, @"oauth_callback",
-																													nil];
-																						
-	userAuthURL = [userAuthURL urlByAddingParameterDictionary:parameters];
-	BOOL delegateWantsToBeInvolved = [self.delegate respondsToSelector:@selector(automaticallyRequestAuthenticationFromURL:withCallbackURL:)];
-	
-	if (!delegateWantsToBeInvolved || (delegateWantsToBeInvolved && [self.delegate automaticallyRequestAuthenticationFromURL:userAuthURL withCallbackURL:callbackURL])) {
-		MPLog(@"--> Automatically Performing User Auth Request: %@", userAuthURL);
-		[self _authenticationRequestForUserPermissionsConfirmationAtURL:userAuthURL];
 	}
 }
 
@@ -188,7 +187,7 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
         
 		MPLog(@"--> Performing Access Token Request: %@", self.oauthGetAccessTokenURL);
 		[self.oauthAPI performMethod:nil atURL:self.oauthGetAccessTokenURL withParameters:params 
-                          withTarget:self andAction:nil usingHTTPMethod:httpMethod];
+                            delegate:self handler:nil usingHTTPMethod:httpMethod];
 	}
 }
 
@@ -222,11 +221,10 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
         parameters = tempArray;
     }
 	
-	[self.oauthAPI performMethod:nil
-						   atURL:self.oauthGetAccessTokenURL
+	[self.oauthAPI performMethod:nil atURL:self.oauthGetAccessTokenURL
 				  withParameters:parameters
-					  withTarget:self       // cb: changed to self to react on errors
-					   andAction:nil];
+                        delegate:self
+                         handler:nil];
 	
 	[sessionHandleParameter release];	
 }
