@@ -17,15 +17,6 @@
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
 		<string>http://www.foursquare.com/oauth/access_token</string>
-		<key>MPOAuthAuthenticationMethodAuthExchange</key>
-		<dict>
-			<key>MPOAuthAccessTokenURL</key>
-			<string>https://api.foursquare.com/v1/authexchange</string>
-		</dict>
-		<key>MPOAuthAuthenticationPreferredMethods</key>
-		<array>
-			<string>MPOAuthAuthenticationMethodAuthExchange</string>
-		</array>
 		<key>MPOAuthRequestTokenURL</key>
 		<string>http://www.foursquare.com/oauth/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
@@ -167,7 +158,7 @@
 		<string>https://api.xing.com/v1/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
 		<string>https://api.xing.com/v1/authorize</string>
-    </dict>
+	</dict>
 	<key>.flickr.com</key>
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
