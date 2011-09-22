@@ -55,7 +55,8 @@
 #pragma mark -
 
 - (NSArray *)nonOAuthParameters {
-	NSArray *oauthParameters = [NSArray arrayWithObjects:@"oauth_signature", @"oauth_nonce", @"oauth_token", @"oauth_consumer_key", @"oauth_timestamp", @"oauth_version", @"oauth_signature_method", nil];
+	NSArray *oauthParameters = [NSArray arrayWithObjects:@"oauth_signature", @"oauth_nonce", @"oauth_token", @"oauth_consumer_key",
+                                @"oauth_timestamp", @"oauth_version", @"oauth_signature_method", nil];
 	NSPredicate *filterPredicate = [NSPredicate predicateWithFormat:@"!(name IN %@)", oauthParameters];
 	return [self.parameters filteredArrayUsingPredicate:filterPredicate];
 }
@@ -74,7 +75,7 @@
 	if (token) {
 		fullAuthString = [NSString stringWithFormat:@"OAuth oauth_token=\"%@\",oauth_consumer_key=\"%@\",oauth_version=\"%@\",oauth_signature_method=\"%@\", oauth_timestamp=\"%@\",oauth_nonce=\"%@\",oauth_signature=\"%@\"", token, consumerKey, version, method, timeStamp, nonce, signature];
 	} else {
-		fullAuthString = [NSString stringWithFormat:@"OAuth oauth_consumer_key=\"%@\",oauth_version=\"%@\",oauth_signature_method=\"%@\", oauth_timestamp=\"%@\",oauth_nonce=\"%@\",oauth_signature=\"%@\"", consumerKey, version, method, timeStamp, nonce, signature];		
+		fullAuthString = [NSString stringWithFormat:@"OAuth oauth_consumer_key=\"%@\",oauth_version=\"%@\",oauth_signature_method=\"%@\",oauth_timestamp=\"%@\", oauth_nonce=\"%@\",oauth_signature=\"%@\"", consumerKey, version, method, timeStamp, nonce, signature];		
 	}
 
 	return fullAuthString;
@@ -97,14 +98,16 @@
 	
 	if ([[self HTTPMethod] isEqualToString:@"GET"] && [self.parameters count]) {
 		urlString = [NSString stringWithFormat:@"%@?%@", [self.url absoluteString], parameterString];
+        
 	} else if  ([[self HTTPMethod] isEqualToString:@"POST"]) {
 		NSArray *nonOauthParameters = [self nonOAuthParameters];
-		urlString = [self.url absoluteString];
-		[aRequest setValue: [self authorizationHeaderValueFromParameterString:parameterString] forHTTPHeaderField:@"Authorization"];
+        urlString = [self.url absoluteString];
+		[aRequest setValue:[self authorizationHeaderValueFromParameterString:parameterString] forHTTPHeaderField:@"Authorization"];
 
 		if ([nonOauthParameters count] && [aRequest HTTPBody]) {
 			[NSException raise:@"MalformedHTTPPOSTMethodException" format:@"The request has both an HTTP Body and additional parameters. This is not supported."];
 		} else if ([nonOauthParameters count]) {
+            
 			NSString *postDataString = [MPURLRequestParameter parameterStringForParameters:nonOauthParameters];
 			NSData *postData = [postDataString dataUsingEncoding:NSUTF8StringEncoding];
 			MPLog(@"postDataString - %@", postDataString);
@@ -112,6 +115,7 @@
 			[aRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
 			[aRequest setValue:[NSString stringWithFormat:@"%d", [postData length]] forHTTPHeaderField:@"Content-Length"];
 			[aRequest setHTTPBody:postData];
+            
 		}
 	} else {
 		[NSException raise:@"UnhandledHTTPMethodException" format:@"The requested HTTP method, %@, is not supported", self.HTTPMethod];

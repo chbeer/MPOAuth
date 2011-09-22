@@ -175,7 +175,6 @@
 			}
 		} else if ([foundParameters objectForKey:@"oauth_token"]) {
 			NSString *aParameterValue = nil;
-			MPLog(@"foundParameters = %@", foundParameters);
 
 			if ([foundParameters count] && (aParameterValue = [foundParameters objectForKey:@"oauth_token"])) {
 				if (!self.credentials.requestToken && !self.credentials.accessToken) {

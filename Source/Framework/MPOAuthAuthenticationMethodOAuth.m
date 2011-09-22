@@ -270,6 +270,10 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 		[self.oauthAPI setCredential:[parameters objectForKey:MPOAuthCredentialSessionHandleKey] withName:kMPOAuthCredentialSessionHandle];
 	}
 
+    if ([delegate_ respondsToSelector:@selector(requestLoader:accessTokenReceivedWithParameters:)]) {
+        [delegate_ requestLoader:loader accessTokenReceivedWithParameters:parameters];
+    }
+    
 	[self.oauthAPI setAuthenticationState:MPOAuthAuthenticationStateAuthenticated];
 	
 	if ([parameters objectForKey:@"oauth_expires_in"]) {
@@ -283,10 +287,6 @@ NSString * const MPOAuthCredentialVerifierKey				= @"oauth_verifier";
 	} else {
 		[[NSUserDefaults standardUserDefaults] removeObjectForKey:MPOAuthTokenRefreshDateDefaultsKey];
 	}
-    
-    if ([delegate_ respondsToSelector:@selector(requestLoader:accessTokenReceivedWithParameters:)]) {
-        [delegate_ requestLoader:loader accessTokenReceivedWithParameters:parameters];
-    }
 }
 
 - (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRejectedWithParameters:(NSDictionary*)parameters;
