@@ -15,12 +15,16 @@
 	NSString		*_httpMethod;
 	NSURLRequest	*_urlRequest;
 	NSMutableArray	*_parameters;
+    
+    BOOL             _oAuthParameterInHeader;
 }
 
 @property (nonatomic, readwrite, retain) NSURL *url;
 @property (nonatomic, readwrite, retain) NSString *HTTPMethod;
 @property (nonatomic, readonly, retain) NSURLRequest *urlRequest;
 @property (nonatomic, readwrite, retain) NSMutableArray *parameters;
+
+@property (nonatomic, readwrite, assign) BOOL oAuthParameterInHeader;
 
 - (id)initWithURL:(NSURL *)inURL andParameters:(NSArray *)parameters;
 - (id)initWithURLRequest:(NSURLRequest *)inRequest;

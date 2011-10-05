@@ -38,8 +38,8 @@
 
 - (id)initWithRequest:(MPOAuthURLRequest *)inRequest delegate:(id)inDelegate credentials:(NSObject <MPOAuthCredentialStore, MPOAuthParameterFactory> *)inCredentials {
 	[inRequest addParameters:[inCredentials oauthParameters]];
+    
 	NSURLRequest *urlRequest = [inRequest urlRequestSignedWithSecret:[inCredentials signingKey] usingMethod:[inCredentials signatureMethod]];
-    NSLog(@"request: %@", [[NSString alloc] initWithData:[urlRequest HTTPBody] encoding:0]);
 	if (self = [super initWithRequest:urlRequest delegate:inDelegate]) {
 		_credentials = [inCredentials retain];
 	}

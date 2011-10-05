@@ -42,6 +42,10 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 - (void)performMethod:(NSString *)inMethod atURL:(NSURL *)inURL withParameters:(NSArray *)inParameters delegate:(id)delegate handler:(MPOAuthRequestLoaderHandler)inHandler usingHTTPMethod:(NSString *)inHTTPMethod;
 @end
 
+@interface NSObject (MPOAuthRequestConfiguration)
+- (BOOL) requestShouldSetOAuthAttributesInHeader:(MPOAuthURLRequest*)request;
+@end
+
 @implementation MPOAuthAPI
 
 - (id)initWithCredentials:(NSDictionary *)inCredentials andBaseURL:(NSURL *)inBaseURL {
@@ -176,6 +180,10 @@ NSString * const MPOAuthAuthenticationURLKey		= @"MPOAuthAuthenticationURL";
 	loader.credentials = self.credentials;
     loader.delegate = inDelegate;
 	loader.handler = inHandler;
+    
+    if ([inDelegate respondsToSelector:@selector(requestShouldSetOAuthAttributesInHeader:)]) {
+        aRequest.oAuthParameterInHeader = [inDelegate requestShouldSetOAuthAttributesInHeader:aRequest];
+    }
 	
 	[loader loadSynchronously:NO];
 	//	[self.activeLoaders addObject:loader];
