@@ -162,7 +162,7 @@
 	<key>.flickr.com</key>
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
-		<string>http://www.flickr.com/services/oauth/request_token</string>
+		<string>http://www.flickr.com/services/oauth/access_token</string>
 		<key>MPOAuthRequestTokenURL</key>
 		<string>http://www.flickr.com/services/oauth/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
