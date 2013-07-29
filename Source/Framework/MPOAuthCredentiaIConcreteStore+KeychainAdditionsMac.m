@@ -20,7 +20,7 @@
 	NSString *serverName = [self.baseURL host];
 	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
 	NSString *securityDomain = [self.authenticationURL host];
-	NSString *uniqueName = [NSString stringWithFormat:@"%@.%@", bundleID, inName];
+	NSString *uniqueName = [NSString stringWithFormat:@"%@.%@.%@", bundleID, [store_ objectForKey:@"TSABAccountIdentifier"], inName];
 	SecKeychainItemRef existingKeychainItem = NULL;
 	
 	if ([self findValueFromKeychainUsingName:inName returningItem:&existingKeychainItem]) {
@@ -49,7 +49,7 @@
 	NSString *serverName = [self.baseURL host];
 	NSString *securityDomain = [self.authenticationURL host];
 	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-	NSString *uniqueName = [NSString stringWithFormat:@"%@.%@", bundleID, inName];
+	NSString *uniqueName = [NSString stringWithFormat:@"%@.%@.%@", bundleID, [store_ objectForKey:@"TSABAccountIdentifier"], inName];
 	
 	UInt32 passwordLength = 0;
 	const char *passwordString = NULL;
