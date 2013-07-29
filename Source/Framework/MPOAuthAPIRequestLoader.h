@@ -20,6 +20,7 @@ typedef void(^MPOAuthRequestLoaderHandler)(MPOAuthAPIRequestLoader *loader, NSDa
 - (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenReceivedWithParameters:(NSDictionary*)parameters;
 - (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRejectedWithParameters:(NSDictionary*)parameters;
 - (void) requestLoader:(MPOAuthAPIRequestLoader*)loader accessTokenRefreshedWithParameters:(NSDictionary*)parameters;
+
 - (void) requestLoader:(MPOAuthAPIRequestLoader*)loader errorOccuredWithStatus:(int)status withParameters:(NSDictionary*)parameters;
 
 @end

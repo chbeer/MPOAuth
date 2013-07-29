@@ -138,7 +138,7 @@
 	NSDictionary *foundParameters = nil;
 	NSInteger status = [(NSHTTPURLResponse *)[self.oauthResponse urlResponse] statusCode];
 	
-	if ([response length] > 5 && [[response substringToIndex:5] isEqualToString:@"oauth"]) {
+	if ([response length] > 5 && [response rangeOfString:@"oauth_"].location != NSNotFound) {
 		foundParameters = [MPURLRequestParameter parameterDictionaryFromString:response];
 		self.oauthResponse.oauthParameters = foundParameters;
 		
