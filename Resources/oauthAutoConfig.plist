@@ -117,7 +117,7 @@
 	<key>.twitter.com</key>
 	<dict>
 		<key>MPOAuthAccessTokenURL</key>
-		<string>http://twitter.com/oauth/access_token</string>
+		<string>https://twitter.com/oauth/access_token</string>
 		<key>MPOAuthAuthenticationMethodXAuth_</key>
 		<dict>
 			<key>MPOAuthAccessTokenURL</key>
@@ -125,12 +125,12 @@
 		</dict>
 		<key>MPOAuthAuthenticationPreferredMethods_</key>
 		<array>
-			<string>MPOAuthAuthenticationMethodXAuth</string>
+			<string>MPOAuthAuthenticationMethodOAuth</string>
 		</array>
 		<key>MPOAuthRequestTokenURL</key>
-		<string>http://twitter.com/oauth/request_token</string>
+		<string>https://twitter.com/oauth/request_token</string>
 		<key>MPOAuthUserAuthorizationURL</key>
-		<string>http://twitter.com/oauth/authorize</string>
+		<string>https://twitter.com/oauth/authorize</string>
 	</dict>
 	<key>.yahoo.com</key>
 	<dict>
